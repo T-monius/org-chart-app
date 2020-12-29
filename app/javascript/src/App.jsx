@@ -21,7 +21,7 @@ const Level = ({ nodes, parent }) => {
       {name}
       <ul>
         {getChildren({ node: parent, nodes }).map((child) => (
-          <li key={child.id}>
+          <li key={child.id} draggable>
             <Level nodes={nodes} parent={child} />
           </li>
         ))}
@@ -32,6 +32,7 @@ const Level = ({ nodes, parent }) => {
 
 const App = () => {
   const [nodes, setNodes] = useState(null);
+
   useEffect(() => {
     fetch("/nodes", {
       method: "GET",
