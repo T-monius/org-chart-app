@@ -34,6 +34,23 @@ const Level = ({ nodes, handleNodeChange, parent, draggingNodeInfo, dragOverNode
 
     draggingNode.parent_id = newParentId;
     handleNodeChange(nodesCopy);
+    saveUpdateNodeParent(draggingNode.id, newParentId);
+  };
+
+  const saveUpdateNodeParent = (nodeId, newParentId) => {
+    const data = JSON.stringify({ id: nodeId, parent_id: newParentId});
+
+    fetch(`/nodes/${nodeId}`, {
+      method: "PATCH",
+      headers: new window.Headers({
+        "Content-Type": "application/json; charset=utf-8",
+        Accept: "application/json",
+      }),
+      body: data,
+    })
+    .then((resp) => response.json())
+    .then((data) => console.log('Success: ', data))
+    .catch((e) => console.error('Error: ',e));
   };
 
   return (
