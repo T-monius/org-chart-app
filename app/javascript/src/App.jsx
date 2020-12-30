@@ -5,7 +5,7 @@ const hasChildren = ({ node, nodes }) =>
 const getChildren = ({ node, nodes }) =>
   nodes.filter((item) => item.parent_id === node.id);
 
-const Level = ({ nodes, parent, draggingNode }) => {
+const Level = ({ nodes, parent, draggingNode, dragOverNode }) => {
   const name = parent.last_name ? (
     <div className="name">
       {parent.first_name} {parent.last_name}
@@ -19,10 +19,20 @@ const Level = ({ nodes, parent, draggingNode }) => {
   const handleDragStart = (e, nodeId, parentId) => {
     e.stopPropagation();
     draggingNode.current = { nodeId, parentId };
+    console.log('---------DraggingNode-----------');
     console.log('nodeId: ', nodeId);
     console.log('parentId: ', parentId);
     console.log(e.target.innerHTML);
   };
+
+  const handleDragEnter = (e, nodeId, parentId) => {
+    e.stopPropagation();
+    dragOverNode.current = { nodeId, parentId };
+    console.log('---------DragOverNode-----------');
+    console.log('nodeId: ', nodeId);
+    console.log('parentId: ', parentId);
+    console.log(e.target.innerHTML);
+  }
 
   return (
     <>
@@ -32,12 +42,14 @@ const Level = ({ nodes, parent, draggingNode }) => {
           <li
             key={child.id}
             onDragStart={(e) => handleDragStart(e, child.id, parent.id)}
+            onDragEnter={(e) => handleDragEnter(e, child.id, parent.id)}
             draggable
           >
             <Level
               nodes={nodes}
               parent={child}
               draggingNode={draggingNode}
+              dragOverNode={dragOverNode}
             />
           </li>
         ))}
@@ -48,6 +60,7 @@ const Level = ({ nodes, parent, draggingNode }) => {
 
 const App = () => {
   const draggingNode = useRef();
+  const dragOverNode = useRef();
   const [nodes, setNodes] = useState(null);
 
   useEffect(() => {
@@ -72,6 +85,7 @@ const App = () => {
           nodes={nodes}
           parent={nodes.find((node) => node.root)}
           draggingNode={draggingNode}
+          dragOverNode={dragOverNode}
         />
       ) : (
         "loading..."
