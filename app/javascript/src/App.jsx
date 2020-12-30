@@ -48,7 +48,7 @@ const Level = ({ nodes, handleNodeChange, parent, draggingNodeInfo, dragOverNode
       }),
       body: data,
     })
-    .then((resp) => response.json())
+    .then((resp) => resp.json())
     .then((data) => console.log('Success: ', data))
     .catch((e) => console.error('Error: ',e));
   };
