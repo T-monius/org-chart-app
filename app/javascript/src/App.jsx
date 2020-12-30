@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 const hasChildren = ({ node, nodes }) =>
   nodes.some((item) => item.parent_id === node.id);
 const getChildren = ({ node, nodes }) =>
   nodes.filter((item) => item.parent_id === node.id);
 
-const Level = ({ nodes, parent }) => {
+const Level = ({ nodes, parent, draggingNode }) => {
   const name = parent.last_name ? (
     <div className="name">
       {parent.first_name} {parent.last_name}
@@ -16,13 +16,29 @@ const Level = ({ nodes, parent }) => {
     return name;
   }
 
+  const handleDragStart = (e, nodeId, parentId) => {
+    e.stopPropagation();
+    draggingNode.current = { nodeId, parentId };
+    console.log('nodeId: ', nodeId);
+    console.log('parentId: ', parentId);
+    console.log(e.target.innerHTML);
+  };
+
   return (
     <>
       {name}
       <ul>
         {getChildren({ node: parent, nodes }).map((child) => (
-          <li key={child.id} draggable>
-            <Level nodes={nodes} parent={child} />
+          <li
+            key={child.id}
+            onDragStart={(e) => handleDragStart(e, child.id, parent.id)}
+            draggable
+          >
+            <Level
+              nodes={nodes}
+              parent={child}
+              draggingNode={draggingNode}
+            />
           </li>
         ))}
       </ul>
@@ -31,6 +47,7 @@ const Level = ({ nodes, parent }) => {
 };
 
 const App = () => {
+  const draggingNode = useRef();
   const [nodes, setNodes] = useState(null);
 
   useEffect(() => {
@@ -51,7 +68,11 @@ const App = () => {
     <>
       <h1>Org Chart</h1>
       {nodes ? (
-        <Level nodes={nodes} parent={nodes.find((node) => node.root)} />
+        <Level
+          nodes={nodes}
+          parent={nodes.find((node) => node.root)}
+          draggingNode={draggingNode}
+        />
       ) : (
         "loading..."
       )}
