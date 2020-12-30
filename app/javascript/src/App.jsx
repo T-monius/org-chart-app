@@ -5,7 +5,7 @@ const hasChildren = ({ node, nodes }) =>
 const getChildren = ({ node, nodes }) =>
   nodes.filter((item) => item.parent_id === node.id);
 
-const Level = ({ nodes, parent, draggingNode, dragOverNode }) => {
+const Level = ({ nodes, handleNodeChange, parent, draggingNodeInfo, dragOverNodeInfo }) => {
   const name = parent.last_name ? (
     <div className="name">
       {parent.first_name} {parent.last_name}
@@ -18,21 +18,23 @@ const Level = ({ nodes, parent, draggingNode, dragOverNode }) => {
 
   const handleDragStart = (e, nodeId, parentId) => {
     e.stopPropagation();
-    draggingNode.current = { nodeId, parentId };
-    console.log('---------DraggingNode-----------');
-    console.log('nodeId: ', nodeId);
-    console.log('parentId: ', parentId);
-    console.log(e.target.innerHTML);
+    draggingNodeInfo.current = { nodeId, parentId };
   };
 
   const handleDragEnter = (e, nodeId, parentId) => {
     e.stopPropagation();
-    dragOverNode.current = { nodeId, parentId };
-    console.log('---------DragOverNode-----------');
-    console.log('nodeId: ', nodeId);
-    console.log('parentId: ', parentId);
-    console.log(e.target.innerHTML);
+    dragOverNodeInfo.current = { nodeId, parentId };
   }
+
+  const handleDragEnd = (e) => {
+    e.stopPropagation();
+    const newParentId = dragOverNodeInfo.current.parentId;
+    const nodesCopy = [...nodes];
+    const draggingNode = nodesCopy.find((node) => node.id === draggingNodeInfo.current.nodeId);
+
+    draggingNode.parent_id = newParentId;
+    handleNodeChange(nodesCopy);
+  };
 
   return (
     <>
@@ -43,13 +45,15 @@ const Level = ({ nodes, parent, draggingNode, dragOverNode }) => {
             key={child.id}
             onDragStart={(e) => handleDragStart(e, child.id, parent.id)}
             onDragEnter={(e) => handleDragEnter(e, child.id, parent.id)}
+            onDragEnd={(e) => handleDragEnd(e)}
             draggable
           >
             <Level
               nodes={nodes}
+              handleNodeChange={handleNodeChange}
               parent={child}
-              draggingNode={draggingNode}
-              dragOverNode={dragOverNode}
+              draggingNodeInfo={draggingNodeInfo}
+              dragOverNodeInfo={dragOverNodeInfo}
             />
           </li>
         ))}
@@ -59,8 +63,8 @@ const Level = ({ nodes, parent, draggingNode, dragOverNode }) => {
 };
 
 const App = () => {
-  const draggingNode = useRef();
-  const dragOverNode = useRef();
+  const draggingNodeInfo = useRef();
+  const dragOverNodeInfo = useRef();
   const [nodes, setNodes] = useState(null);
 
   useEffect(() => {
@@ -77,15 +81,20 @@ const App = () => {
       });
   }, []);
 
+  const handleNodeChange = (nodes) => {
+    setNodes(nodes);
+  };
+
   return (
     <>
       <h1>Org Chart</h1>
       {nodes ? (
         <Level
           nodes={nodes}
+          handleNodeChange={handleNodeChange}
           parent={nodes.find((node) => node.root)}
-          draggingNode={draggingNode}
-          dragOverNode={dragOverNode}
+          draggingNodeInfo={draggingNodeInfo}
+          dragOverNodeInfo={dragOverNodeInfo}
         />
       ) : (
         "loading..."
